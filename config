@@ -1,0 +1,18 @@
+1. ssh xenomai@10.105.0.x+101
+(mot de passe: xenomai)
+
+2. git config --global http.sslverify "false"
+
+3. git clone https://github.com/INSA-GEI/dumber.git <mydir>
+
+4. cd <mydir>
+
+5. git switch evoxx-dumber-v3
+
+6. cd /home/xenomai/<mydir>/software/raspberry/superviseur-robot
+
+7. make CONF=Debug__RPI_ -j4  -Wall
+
+8. cd /home/xenomai/<mydir>/software/raspberry/superviseur-robot/dist/Debug__RPI_/GNU-Linux
+
+9. sudo ./superviseur-robot
