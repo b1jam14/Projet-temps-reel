@@ -68,6 +68,9 @@ private:
     int move = MESSAGE_ROBOT_STOP;
     Message* robotAnswer;
     int errorCount = 0;
+    Camera * camera;
+    int flux = 0;
+    int wdMode = 0;
 
     /**********************************************************************/
     /* Tasks                                                              */
@@ -79,6 +82,8 @@ private:
     RT_TASK th_startRobot;
     RT_TASK th_move;
     RT_TASK th_battery;
+    RT_TASK th_cam;
+    RT_TASK th_watchdog;
     RT_TASK th_error;
     
     /**********************************************************************/
@@ -89,6 +94,9 @@ private:
     RT_MUTEX mutex_robotStarted;
     RT_MUTEX mutex_move;
     RT_MUTEX mutex_error;
+    RT_MUTEX mutex_cam;
+    RT_MUTEX mutex_fluxCam;
+    RT_MUTEX mutex_watchdog;
 
     /**********************************************************************/
     /* Semaphores                                                         */
@@ -97,6 +105,7 @@ private:
     RT_SEM sem_openComRobot;
     RT_SEM sem_serverOk;
     RT_SEM sem_startRobot;
+    RT_SEM sem_watchdog;
 
     /**********************************************************************/
     /* Message queues                                                     */
@@ -156,9 +165,12 @@ private:
 
     void LevelBat();
 
-    void ErrorCounter();
+
+    void openCam();
+    void cam();
+    void closeCam();
+    void watchdog();
+
 };
 
 #endif // __TASKS_H__ 
-
-
