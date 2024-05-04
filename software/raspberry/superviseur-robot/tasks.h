@@ -64,14 +64,16 @@ private:
     /**********************************************************************/
     ComMonitor monitor;
     ComRobot robot;
+    Camera* camera;
+    Arena arena;
     int robotStarted = 0;
     int move = MESSAGE_ROBOT_STOP;
-    Message* robotAnswer;
     int errorCount = 0;
-    Camera * camera;
-    int flux = 0;
-    int wdMode = 0;
-
+    int watchdog;
+    int fluxCamera = 0;
+    int arenaFound=0; 
+    int position=0;  
+    
     /**********************************************************************/
     /* Tasks                                                              */
     /**********************************************************************/
@@ -82,9 +84,8 @@ private:
     RT_TASK th_startRobot;
     RT_TASK th_move;
     RT_TASK th_battery;
-    RT_TASK th_cam;
     RT_TASK th_watchdog;
-    RT_TASK th_error;
+    RT_TASK th_camera;
     
     /**********************************************************************/
     /* Mutex                                                              */
@@ -93,10 +94,9 @@ private:
     RT_MUTEX mutex_robot;
     RT_MUTEX mutex_robotStarted;
     RT_MUTEX mutex_move;
-    RT_MUTEX mutex_error;
-    RT_MUTEX mutex_cam;
-    RT_MUTEX mutex_fluxCam;
-    RT_MUTEX mutex_watchdog;
+    RT_MUTEX mutex_errorCount;
+    RT_MUTEX mutex_camera;
+    RT_MUTEX mutex_fluxCamera;
 
     /**********************************************************************/
     /* Semaphores                                                         */
@@ -106,6 +106,7 @@ private:
     RT_SEM sem_serverOk;
     RT_SEM sem_startRobot;
     RT_SEM sem_watchdog;
+    RT_SEM sem_battery;
 
     /**********************************************************************/
     /* Message queues                                                     */
@@ -163,14 +164,46 @@ private:
      */
     Message *ReadInQueue(RT_QUEUE *queue);
 
-    void LevelBat();
+    /**
+     * Get the battery level from the robot and send it to the monitor
+     */
+    void Battery();
 
+    /**
+     * Communicate with the robot the watchdog
+     */
+    void Watchdog();
 
-    void openCam();
-    void cam();
-    void closeCam();
-    void watchdog();
+    /*
+     * Count the number of error occured
+     */
+    void ErrorCounter(Message* msg);
 
+    /**
+     * Open the camera 
+     */
+    void OpenCamera();
+
+    /**
+     * Close the camera 
+     */
+    void CloseCamera();
+
+    /**
+     * Camera 
+     */
+    void CameraFlux();
+
+    /**
+     * Get arena size
+     */
+    void GetArena();
+
+    /**
+     * 
+     */
+    void PositionRobot(Img* image);
 };
 
 #endif // __TASKS_H__ 
+
