@@ -200,10 +200,14 @@ private:
     void GetArena();
 
     /**
-     * 
+     * Get the position
      */
     void PositionRobot(Img* image);
+
+    /**
+     * When a monitor error occured
+     */
+    void ErrorMonitor();
 };
 
 #endif // __TASKS_H__ 
-
