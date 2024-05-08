@@ -313,7 +313,7 @@ void Tasks::ReceiveFromMonTask(void *arg) {
 
         if (msgRcv->CompareID(MESSAGE_MONITOR_LOST)) {
             delete(msgRcv);
-            exit(-1);
+            ErrorMonitor();
         } else if (msgRcv->CompareID(MESSAGE_ROBOT_COM_OPEN)) {
             rt_sem_v(&sem_openComRobot);
         } else if (msgRcv->CompareID(MESSAGE_ROBOT_START_WITHOUT_WD)) {
@@ -598,11 +598,15 @@ void Tasks::OpenCamera(){
     cout << "Start " << __PRETTY_FUNCTION__ << endl << flush;
 
     rt_mutex_acquire(&mutex_camera, TM_INFINITE);
-    if(camera->Open()){
-        msg = new Message(MESSAGE_ANSWER_ACK);
-        rt_mutex_acquire(&mutex_fluxCamera, TM_INFINITE);
-        fluxCamera = 1;
-        rt_mutex_release(&mutex_fluxCamera);
+    if(!camera->IsOpen()){
+        if(camera->Open()){
+            msg = new Message(MESSAGE_ANSWER_ACK);
+            rt_mutex_acquire(&mutex_fluxCamera, TM_INFINITE);
+            fluxCamera = 1;
+            rt_mutex_release(&mutex_fluxCamera);
+        }else{
+            msg = new Message(MESSAGE_ANSWER_NACK);
+        }
     }else{
         msg = new Message(MESSAGE_ANSWER_NACK);
     }
@@ -693,16 +697,13 @@ void Tasks::GetArena(){
 }
 
 /**
- * Get the posititon 
+ * Get the position 
  */
 void Tasks::PositionRobot(Img* image){
     std::list<Position> robotPosition;
-    MessageImg* msg;
     robotPosition =  image->SearchRobot(arena); //Search available robots in an image and return a list of position
-    if(!robotPosition.empty()){ /*
+    if(!robotPosition.empty()){ 
         image->DrawAllRobots(robotPosition);
-        msg = new MessageImg(MESSAGE_CAM_IMAGE, image);
-        WriteInQueue(&q_messageToMon,msg);*/
         for (auto position : robotPosition){
             WriteInQueue(&q_messageToMon, new MessagePosition(MESSAGE_CAM_POSITION,position)); 
         }
@@ -710,10 +711,21 @@ void Tasks::PositionRobot(Img* image){
         Position pos = Position();
         pos.center = cv::Point2f(-1.0,-1.0);
         pos.direction = cv::Point2f(-1.0,-1.0);
-        /*
-        image->DrawRobot(pos);
-        msg = new MessageImg(MESSAGE_CAM_IMAGE, image);
-        WriteInQueue(&q_messageToMon, msg);*/
         WriteInQueue(&q_messageToMon, new MessagePosition(MESSAGE_CAM_POSITION,pos)); 
     }
+}
+
+/*
+ * When a monitor error occured
+ */
+void Tasks::ErrorMonitor(){
+    cout<<"*** Communication lost with monitor ***"<<endl<<flush;
+    Stop();
+    CloseCamera();
+    robot.Close();
+    monitor.Close();
+   
+    void* arg;
+    ServerTask(arg); 
+    cout<<"*** Communication back with monitor ***"<<endl<<flush;
 }
