@@ -692,7 +692,7 @@ void Tasks::GetArena(){
     }else{
         msg = new MessageImg(MESSAGE_CAM_IMAGE, image);
         WriteInQueue(&q_messageToMon,msg);
-        //TODO: send message as not found
+        
     }
 }
 
@@ -724,7 +724,7 @@ void Tasks::ErrorMonitor(){
     CloseCamera();
     robot.Close();
     monitor.Close();
-   
+    //reset all vars
     void* arg;
     ServerTask(arg); 
     cout<<"*** Communication back with monitor ***"<<endl<<flush;
